@@ -6,7 +6,7 @@ Ce projet a pour but d'intégrer des fonctionnalités de la plateforme XtraLife 
 
 Pour réaliser ce projet, j'ai récupéré un projet de FlappyBird (https://github.com/dgkanatsios/FlappyBirdStyleGame). J'ai aussi utilisé la plateforme XtraLife (GitHub : https://github.com/xtralifecloud Documentation : http://doc.xtralife.cloud/backend/ site web : http://xtralife.cloud/about/ ).
 
-A l'heure actuelle, j'ai créer le script "Connexion.cs" qui permet la connexion au serveur XtraLife. De plus, il gère toutes les interactions entre le jeu et la plateforme. De plus, j'ai ajouté un stockage du score dans le "Virtual File System" de XtraLife.
+A l'heure actuelle, j'ai créer le script "Connexion.cs" (Assets/Flappy/Scripts) qui permet la connexion au serveur XtraLife. De plus, il gère toutes les interactions entre le jeu et la plateforme. De plus, j'ai ajouté un stockage du score dans le "Virtual File System" de XtraLife.
 
 Ce projet n'est pas terminé, j'ai encore plusieurs idées de fonctionnalités à ajouter. Je vais mettre à jours mon avancé sur ce projet et décrire les nouvelles fonctionnalités sur ce README.
 
