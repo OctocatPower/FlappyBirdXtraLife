@@ -1,4 +1,6 @@
 # FlappyBirdXtraLife
+Projet réalisé sur Unity3D en C#
+
 
 Ce projet a pour but d'intégrer des fonctionnalités de la plateforme XtraLife dans un projet.
 
