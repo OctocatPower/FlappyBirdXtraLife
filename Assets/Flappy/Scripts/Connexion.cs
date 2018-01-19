@@ -3,38 +3,50 @@ using System.Collections.Generic;
 using UnityEngine;
 using CotcSdk;
 
-public class Connexion : MonoBehaviour {
+public class Connexion : MonoBehaviour
+{
 
 
-    public GameObject IntroGUI, Score, Flappy, MenuGUI, Canvas, ClassementButton;
-    private Cloud cloud;
+    public GameObject IntroGUI, Score, Flappy, MenuGUI, Canvas, ConnectedButton, Play, ClassementGUI, ReturnButton, SuccesGUI;
     public bool connected = false;
+    public GameObject[] Succes = new GameObject[3];
+
     private Gamer Player;
+    private Cloud cloud;
+    private Bundle MaxScore;
+
+    public
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
+        
+    }
 
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
 
     public void OnConnexionClick()
     {
         CotcGameObject cotc = FindObjectOfType<CotcGameObject>();
-        cotc.GetCloud().Done(cloud => {
+        cotc.GetCloud().Done(cloud =>
+        {
             cloud.LoginAnonymously()
-            .Done(gamer => {
+            .Done(gamer =>
+            {
                 Debug.Log("Signed in succeeded (ID = " + gamer.GamerId + ")");
                 Debug.Log("Signed in succeeded (Secret = " + gamer.GamerSecret + ")");
                 Debug.Log("Login data: " + gamer);
                 Debug.Log("Server time: " + gamer["servertime"]);
                 connected = true;
-                ChangeMenu();
+                GameObject.Find("Connexion").SetActive(false);
+                ConnectedButton.SetActive(true);
                 Player = gamer;
-            }, ex => {
+            }, ex =>
+            {
                 // The exception should always be CotcException
                 CotcException error = (CotcException)ex;
                 Debug.LogError("Failed to login: " + error.ErrorCode + " (" + error.HttpStatusCode + ")");
@@ -53,37 +65,67 @@ public class Connexion : MonoBehaviour {
 
     public void OnClassementClick()
     {
+        GetMaxScoreValue();
+        ClassementGUI.SetActive(true);
+        ReturnButton.SetActive(true);
+        MenuGUI.SetActive(false);
+        Play.SetActive(false);
+        ConnectedButton.SetActive(false);
 
+        ScoreManagerScript.Score = MaxScore["MaxScore"];
     }
 
-    private void ChangeMenu()
+    public void OnSuccesClick()
     {
-        GameObject.Find("Connexion").SetActive(false);
-        ClassementButton.SetActive(true);
+        GetMaxScoreValue();
+        SuccesGUI.SetActive(true);
+        ReturnButton.SetActive(true);
+        MenuGUI.SetActive(false);
+        Play.SetActive(false);
+        ConnectedButton.SetActive(false);
+
+        if (MaxScore["MaxScore"] >= 10)
+        {
+            Succes[0].SetActive(true);
+            if (MaxScore["MaxScore"] >= 50)
+            {
+                Succes[1].SetActive(true);
+                if (MaxScore["MaxScore"] >= 100)
+                {
+                    Succes[2].SetActive(true);
+                }
+            }
+        }
     }
 
-    public void DieWithScore (int score)
+    public void OnReturnClick()
+    {
+        ClassementGUI.SetActive(false);
+        SuccesGUI.SetActive(false);
+        ReturnButton.SetActive(false);
+        MenuGUI.SetActive(true);
+        Play.SetActive(true);
+        ConnectedButton.SetActive(true);
+        ScoreManagerScript.Score = 0;
+    }
+
+    public void DieWithScore(int score)
     {
         if (connected)
         {
-            Bundle BestScore = GetUserValue("MaxScore");
-            if ((BestScore != null && BestScore.AsInt() < score) || BestScore == null)
+            GetMaxScoreValue();
+            if (MaxScore == null || MaxScore["MaxScore"] < score)
             {
-                Debug.Log("TEEEEEEST");
                 Bundle NewBestScore = new Bundle(score);
                 SetUserValue("MaxScore", NewBestScore);
             }
         }
-
-        Bundle value = new Bundle(score);
     }
 
     private void SetUserValue(string key, Bundle value)
     {
         if (connected)
         {
-            // currentGamer is an object retrieved after one of the different Login functions.
-
             Player.GamerVfs.Domain("private").SetValue(key, value)
             .Done(setUserValueRes =>
             {
@@ -97,27 +139,22 @@ public class Connexion : MonoBehaviour {
         }
     }
 
-    private Bundle GetUserValue(string key)
+    private void GetMaxScoreValue()
     {
-        Bundle result = null;
-
         if (connected)
         {
-            
-            // currentGamer is an object retrieved after one of the different Login functions.
-
-            Player.GamerVfs.Domain("private").GetValue(key)
+            Player.GamerVfs.Domain("private").GetValue("MaxScore")
             .Done(getUserValueRes =>
             {
-                result = getUserValueRes["result"];
-                Debug.Log("User data: " + result.ToString());
+                MaxScore = getUserValueRes["result"];
+                Debug.Log("User data: " + MaxScore.ToString());
+
             }, ex =>
             {
-            // The exception should always be CotcException
-            CotcException error = (CotcException)ex;
+                // The exception should always be CotcException
+                CotcException error = (CotcException)ex;
                 Debug.Log("Could not get user data due to error: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
             });
         }
-        return result;
     }
 }
