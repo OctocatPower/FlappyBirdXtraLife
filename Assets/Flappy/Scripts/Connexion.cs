@@ -7,7 +7,7 @@ public class Connexion : MonoBehaviour
 {
 
 
-    public GameObject IntroGUI, Score, Flappy, MenuGUI, Canvas, ConnectedButton, Play, ClassementGUI, ReturnButton, SuccesGUI;
+    public GameObject IntroGUI, Score, Flappy, MenuGUI, Canvas, ConnectedButton, MenuButton, ClassementGUI, ReturnButton, SuccesGUI;
     public bool connected = false;
     public GameObject[] Succes = new GameObject[3];
 
@@ -72,7 +72,7 @@ public class Connexion : MonoBehaviour
         ClassementGUI.SetActive(true);
         ReturnButton.SetActive(true);
         MenuGUI.SetActive(false);
-        Play.SetActive(false);
+        MenuButton.SetActive(false);
         ConnectedButton.SetActive(false);
 
         ScoreManagerScript.Score = MaxScore["MaxScore"];
@@ -84,7 +84,7 @@ public class Connexion : MonoBehaviour
         SuccesGUI.SetActive(true);
         ReturnButton.SetActive(true);
         MenuGUI.SetActive(false);
-        Play.SetActive(false);
+        MenuButton.SetActive(false);
         ConnectedButton.SetActive(false);
 
         if (MaxScore["MaxScore"] >= 10)
@@ -107,9 +107,14 @@ public class Connexion : MonoBehaviour
         SuccesGUI.SetActive(false);
         ReturnButton.SetActive(false);
         MenuGUI.SetActive(true);
-        Play.SetActive(true);
+        MenuButton.SetActive(true);
         ConnectedButton.SetActive(true);
         ScoreManagerScript.Score = 0;
+    }
+
+    public void OnExitClick()
+    {
+        Application.Quit();
     }
 
     public void DieWithScore(int score)
