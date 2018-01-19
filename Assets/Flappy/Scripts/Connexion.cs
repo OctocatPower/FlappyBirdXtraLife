@@ -45,6 +45,7 @@ public class Connexion : MonoBehaviour
                 GameObject.Find("Connexion").SetActive(false);
                 ConnectedButton.SetActive(true);
                 Player = gamer;
+                SetUserValue("MaxScore", new Bundle(0));
             }, ex =>
             {
                 // The exception should always be CotcException
@@ -52,6 +53,8 @@ public class Connexion : MonoBehaviour
                 Debug.LogError("Failed to login: " + error.ErrorCode + " (" + error.HttpStatusCode + ")");
             });
         });
+
+        
     }
 
     public void OnPlayClick()
@@ -130,6 +133,7 @@ public class Connexion : MonoBehaviour
             .Done(setUserValueRes =>
             {
                 Debug.Log("User data set: " + setUserValueRes.ToString());
+                GetMaxScoreValue();
             }, ex =>
             {
             // The exception should always be CotcException
