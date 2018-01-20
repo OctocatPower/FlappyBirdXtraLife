@@ -1,26 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using CotcSdk;
 
 public class Connexion : MonoBehaviour
 {
-
-
-    public GameObject IntroGUI, Score, Flappy, MenuGUI, Canvas, ConnectedButton, MenuButton, ClassementGUI, ReturnButton, SuccesGUI;
-    public bool connected = false;
-    public GameObject[] Succes = new GameObject[3];
-
+    private bool connected = false;
+    private bool connectedWithAccount = false;
     private Gamer Player;
     private Cloud cloud;
     private Bundle MaxScore;
+    private GUIController GuiControl;
 
     public
 
     // Use this for initialization
     void Start()
     {
-        
+        GuiControl = gameObject.GetComponent<GUIController>();
+
     }
 
     // Update is called once per frame
@@ -29,7 +28,7 @@ public class Connexion : MonoBehaviour
 
     }
 
-    public void OnConnexionClick()
+    public void AnonymeConnexion()
     {
         CotcGameObject cotc = FindObjectOfType<CotcGameObject>();
         cotc.GetCloud().Done(cloud =>
@@ -42,8 +41,6 @@ public class Connexion : MonoBehaviour
                 Debug.Log("Login data: " + gamer);
                 Debug.Log("Server time: " + gamer["servertime"]);
                 connected = true;
-                GameObject.Find("Connexion").SetActive(false);
-                ConnectedButton.SetActive(true);
                 Player = gamer;
                 SetUserValue("MaxScore", new Bundle(0));
             }, ex =>
@@ -53,68 +50,42 @@ public class Connexion : MonoBehaviour
                 Debug.LogError("Failed to login: " + error.ErrorCode + " (" + error.HttpStatusCode + ")");
             });
         });
-
-        
     }
 
-    public void OnPlayClick()
+    public void OnEmailConnexionClick()
     {
-        IntroGUI.SetActive(true);
-        Score.SetActive(true);
-        Flappy.SetActive(true);
-        MenuGUI.SetActive(false);
-        Canvas.SetActive(false);
-    }
-
-    public void OnClassementClick()
-    {
-        GetMaxScoreValue();
-        ClassementGUI.SetActive(true);
-        ReturnButton.SetActive(true);
-        MenuGUI.SetActive(false);
-        MenuButton.SetActive(false);
-        ConnectedButton.SetActive(false);
-
-        ScoreManagerScript.Score = MaxScore["MaxScore"];
-    }
-
-    public void OnSuccesClick()
-    {
-        GetMaxScoreValue();
-        SuccesGUI.SetActive(true);
-        ReturnButton.SetActive(true);
-        MenuGUI.SetActive(false);
-        MenuButton.SetActive(false);
-        ConnectedButton.SetActive(false);
-
-        if (MaxScore["MaxScore"] >= 10)
-        {
-            Succes[0].SetActive(true);
-            if (MaxScore["MaxScore"] >= 50)
-            {
-                Succes[1].SetActive(true);
-                if (MaxScore["MaxScore"] >= 100)
+        CotcGameObject cotc = FindObjectOfType<CotcGameObject>();
+        string email = GameObject.Find("Email").GetComponent<InputField>().text;
+        string mdp = GameObject.Find("MotDePasse").GetComponent<InputField>().text;
+        cotc.GetCloud().Done(cloud => {
+            cloud.Login(
+                network: "email",
+                networkId: email,
+                networkSecret: mdp)
+            .Done(gamer => {
+                Player = gamer;
+                Debug.Log("Signed in succeeded (ID = " + gamer.GamerId + ")");
+                Debug.Log("Login data: " + gamer);
+                Debug.Log("Server time: " + gamer["servertime"]);
+                connectedWithAccount = true;
+                GuiControl.OnReturnClick();
+            }, ex => {
+                // The exception should always be CotcException
+                CotcException error = (CotcException)ex;
+                if (error.ServerData["name"] == "BadArgument")
                 {
-                    Succes[2].SetActive(true);
+                    GameObject.Find("Error").GetComponent<Text>().text = "Erreur, l'adresse e-mail ou le mot de passe n'est pas valide.";
                 }
-            }
-        }
-    }
-
-    public void OnReturnClick()
-    {
-        ClassementGUI.SetActive(false);
-        SuccesGUI.SetActive(false);
-        ReturnButton.SetActive(false);
-        MenuGUI.SetActive(true);
-        MenuButton.SetActive(true);
-        ConnectedButton.SetActive(true);
-        ScoreManagerScript.Score = 0;
-    }
-
-    public void OnExitClick()
-    {
-        Application.Quit();
+                else if (error.ServerData["name"] == "BadUserCredentials")
+                {
+                    GameObject.Find("Error").GetComponent<Text>().text = "Erreur, le mot de passe n'est pas correcte.";
+                }
+                else
+                {
+                    GameObject.Find("Error").GetComponent<Text>().text = "Erreur.";
+                }
+            });
+        });
     }
 
     public void DieWithScore(int score)
@@ -122,6 +93,7 @@ public class Connexion : MonoBehaviour
         if (connected)
         {
             GetMaxScoreValue();
+            Debug.Log("Score : " + score + " max score : " + MaxScore["MaxScore"]);
             if (MaxScore == null || MaxScore["MaxScore"] < score)
             {
                 Bundle NewBestScore = new Bundle(score);
@@ -130,7 +102,7 @@ public class Connexion : MonoBehaviour
         }
     }
 
-    private void SetUserValue(string key, Bundle value)
+    public void SetUserValue(string key, Bundle value)
     {
         if (connected)
         {
@@ -148,7 +120,7 @@ public class Connexion : MonoBehaviour
         }
     }
 
-    private void GetMaxScoreValue()
+    public void GetMaxScoreValue()
     {
         if (connected)
         {
@@ -164,6 +136,32 @@ public class Connexion : MonoBehaviour
                 CotcException error = (CotcException)ex;
                 Debug.Log("Could not get user data due to error: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
             });
+        }
+    }
+
+
+    public Bundle getMaxScore
+    {
+        get
+        {
+            return this.MaxScore;
+        }
+
+        set
+        {
+            this.MaxScore = value;
+        }
+    }
+
+    public bool isconnectedWithAccount
+    {
+        get
+        {
+            return this.connectedWithAccount;
+        }
+        set
+        {
+            this.connectedWithAccount = value;
         }
     }
 }
